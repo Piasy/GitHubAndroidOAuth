@@ -2,9 +2,11 @@ package com.github.piasy.oauth3.example;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import com.github.piasy.oauth3.github.GitHubOAuth;
+import com.github.piasy.oauth3.github.model.GitHubUser;
 
 public class MainActivity extends AppCompatActivity implements GitHubOAuth.Listener {
 
@@ -38,7 +40,8 @@ public class MainActivity extends AppCompatActivity implements GitHubOAuth.Liste
     }
 
     @Override
-    public void onSuccess(String token) {
+    public void onSuccess(String token, GitHubUser user) {
+        Log.d(GitHubOAuth.TAG, "onSuccess " + token + ", " + user);
         Toast.makeText(this, "onSuccess " + token, Toast.LENGTH_SHORT).show();
     }
 

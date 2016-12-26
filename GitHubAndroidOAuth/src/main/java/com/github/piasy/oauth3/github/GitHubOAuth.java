@@ -1,21 +1,29 @@
 package com.github.piasy.oauth3.github;
 
 import android.support.v4.app.FragmentManager;
+import android.support.v4.util.Pair;
 import android.text.TextUtils;
+import android.util.Log;
 import com.github.piasy.oauth3.github.model.ApiErrorAwareConverterFactory;
+import com.github.piasy.oauth3.github.model.AuthApi;
 import com.github.piasy.oauth3.github.model.AutoGsonAdapterFactory;
-import com.github.piasy.oauth3.github.model.GitHubApi;
+import com.github.piasy.oauth3.github.model.GitHubError;
+import com.github.piasy.oauth3.github.model.GitHubToken;
+import com.github.piasy.oauth3.github.model.GitHubUser;
+import com.github.piasy.oauth3.github.model.UserApi;
 import com.github.piasy.oauth3.github.view.OAuthDialogFragment;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import java.util.Locale;
 import java.util.Random;
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -42,7 +50,8 @@ public final class GitHubOAuth {
     private final CompositeDisposable mDisposable;
 
     private final Random mRandom;
-    private final GitHubApi mGitHubApi;
+    private final AuthApi mAuthApi;
+    private final UserApi mUserApi;
 
     private GitHubOAuth(String clientId, String clientSecret, String scope, String redirectUrl,
             Listener listener) {
@@ -74,16 +83,31 @@ public final class GitHubOAuth {
         Gson gson = new GsonBuilder()
                 .registerTypeAdapterFactory(AutoGsonAdapterFactory.create())
                 .create();
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(GitHubApi.BASE_URL)
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(new HttpLoggingInterceptor(message -> Log.d(TAG, message))
+                        .setLevel(HttpLoggingInterceptor.Level.BODY))
+                .build();
+
+        mAuthApi = new Retrofit.Builder()
+                .baseUrl(AuthApi.BASE_URL)
+                .client(okHttpClient)
                 .addCallAdapterFactory(
                         RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
                 .addConverterFactory(
                         new ApiErrorAwareConverterFactory(GsonConverterFactory.create(gson),
-                                GitHubApi.GitHubError.class))
-                .build();
-
-        mGitHubApi = retrofit.create(GitHubApi.class);
+                                GitHubError.class))
+                .build()
+                .create(AuthApi.class);
+        mUserApi = new Retrofit.Builder()
+                .baseUrl(UserApi.BASE_URL)
+                .client(okHttpClient)
+                .addCallAdapterFactory(
+                        RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
+                .addConverterFactory(
+                        new ApiErrorAwareConverterFactory(GsonConverterFactory.create(gson),
+                                GitHubError.class))
+                .build()
+                .create(UserApi.class);
     }
 
     public void authorize(FragmentManager fragmentManager) {
@@ -100,27 +124,7 @@ public final class GitHubOAuth {
                 new OAuthDialogFragment.Listener() {
                     @Override
                     public void onComplete(String code, String state) {
-                        Disposable disposable = mGitHubApi.accessToken(mClientId, mClientSecret,
-                                code, state)
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(new Consumer<GitHubApi.GitHubToken>() {
-                                    @Override
-                                    public void accept(GitHubApi.GitHubToken gitHubToken)
-                                            throws Exception {
-                                        mListener.onSuccess(gitHubToken.access_token());
-                                    }
-                                }, new Consumer<Throwable>() {
-                                    @Override
-                                    public void accept(Throwable throwable) throws Exception {
-                                        if (throwable instanceof GitHubApi.GitHubError) {
-                                            mListener.onFail(
-                                                    ((GitHubApi.GitHubError) throwable).error());
-                                        } else {
-                                            mListener.onFail("Auth fail for unknown reason.");
-                                        }
-                                    }
-                                });
-                        mDisposable.add(disposable);
+                        getAuthInfo(code, state);
                     }
 
                     @Override
@@ -130,13 +134,34 @@ public final class GitHubOAuth {
                 });
     }
 
+    private void getAuthInfo(String code, String state) {
+        Observable<GitHubToken> tokenInfo = mAuthApi
+                .accessToken(mClientId, mClientSecret, code, state)
+                .publish()
+                .autoConnect(2);
+        Observable<GitHubUser> userInfo = tokenInfo
+                .flatMap(token -> mUserApi.user("token " + token.access_token()));
+
+        Disposable disposable = Observable.zip(tokenInfo, userInfo, Pair::create)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(pair -> mListener.onSuccess(pair.first.access_token(), pair.second),
+                        throwable -> {
+                            if (throwable instanceof GitHubError) {
+                                mListener.onFail(((GitHubError) throwable).error());
+                            } else {
+                                mListener.onFail("Auth fail for unknown reason.");
+                            }
+                        });
+        mDisposable.add(disposable);
+    }
+
     public void destroy() {
         mDisposable.dispose();
     }
 
     public interface Listener {
 
-        void onSuccess(String token);
+        void onSuccess(String token, GitHubUser user);
 
         void onFail(String error);
     }
