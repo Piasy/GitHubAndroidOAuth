@@ -46,8 +46,8 @@ ext {
     artifactName = 'GitHubAndroidOAuth'
     artifactDescription = 'OAuth for GitHub in Android.'
     artifactLabels = ['oauth', 'github', 'android']
-    releaseVersionCode = 1
-    releaseVersionName = '1.0.0'
+    releaseVersionCode = 2
+    releaseVersionName = '1.1.0'
 
     androidCompileSdkVersion = 25
     androidBuildToolsVersion = '25.0.2'

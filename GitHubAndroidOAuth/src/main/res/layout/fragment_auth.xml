@@ -2,8 +2,10 @@
 <FrameLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="@dimen/auth_dialog_margin"
+        android:layout_height="@dimen/auth_dialog_height"
+        android:layout_gravity="center"
+        android:layout_marginLeft="@dimen/auth_dialog_margin_side"
+        android:layout_marginRight="@dimen/auth_dialog_margin_side"
         >
 
     <WebView

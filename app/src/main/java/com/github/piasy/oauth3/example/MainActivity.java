@@ -17,26 +17,19 @@ public class MainActivity extends AppCompatActivity implements GitHubOAuth.Liste
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mGitHubOAuth = new GitHubOAuth.Builder()
+        mGitHubOAuth = GitHubOAuth.builder()
                 .clientId("YOUR_CLIENT_ID")
                 .clientSecret("YOUR_CLIENT_SECRET")
                 .scope("YOUR_SCOPE")
                 .redirectUrl("YOUR_REDIRECT_URL")
-                .listener(this)
                 .build();
 
         findViewById(R.id.mBtnStart).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mGitHubOAuth.authorize(getSupportFragmentManager());
+                mGitHubOAuth.authorize(MainActivity.this);
             }
         });
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mGitHubOAuth.destroy();
     }
 
     @Override

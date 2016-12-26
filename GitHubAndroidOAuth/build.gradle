@@ -42,4 +42,5 @@ dependencies {
     provided "com.google.auto.value:auto-value:$rootProject.autoValueVersion"
     annotationProcessor "com.ryanharter.auto.value:auto-value-gson:$rootProject.autoValueGsonVersion"
     provided "com.ryanharter.auto.value:auto-value-gson:$rootProject.autoValueGsonVersion"
+    annotationProcessor "com.ryanharter.auto.value:auto-value-parcel:0.2.5"
 }
