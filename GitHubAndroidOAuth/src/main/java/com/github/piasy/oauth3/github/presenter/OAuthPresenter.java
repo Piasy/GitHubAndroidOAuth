@@ -46,35 +46,33 @@ public class OAuthPresenter {
         Gson gson = new GsonBuilder()
                 .registerTypeAdapterFactory(AutoGsonAdapterFactory.create())
                 .create();
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .addInterceptor(
-                        new HttpLoggingInterceptor(message -> Log.d(GitHubOAuth.TAG, message))
-                                .setLevel(HttpLoggingInterceptor.Level.BODY))
-                .build();
 
-        mAuthApi = new Retrofit.Builder()
-                .baseUrl(AuthApi.BASE_URL)
-                .client(okHttpClient)
+        OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
+        if (mGitHubOAuth.debug()) {
+            httpClientBuilder.addInterceptor(
+                    new HttpLoggingInterceptor(message -> Log.d(GitHubOAuth.TAG, message))
+                            .setLevel(HttpLoggingInterceptor.Level.BODY));
+        }
+
+        Retrofit.Builder retrofitBuilder = new Retrofit.Builder()
+                .client(httpClientBuilder.build())
                 .addCallAdapterFactory(
                         RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
                 .addConverterFactory(
                         new ApiErrorAwareConverterFactory(GsonConverterFactory.create(gson),
-                                GitHubError.class))
+                                GitHubError.class));
+
+        mAuthApi = retrofitBuilder
+                .baseUrl(AuthApi.BASE_URL)
                 .build()
                 .create(AuthApi.class);
-        mUserApi = new Retrofit.Builder()
+        mUserApi = retrofitBuilder
                 .baseUrl(UserApi.BASE_URL)
-                .client(okHttpClient)
-                .addCallAdapterFactory(
-                        RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
-                .addConverterFactory(
-                        new ApiErrorAwareConverterFactory(GsonConverterFactory.create(gson),
-                                GitHubError.class))
                 .build()
                 .create(UserApi.class);
     }
 
-    public void attatch(OAuthView oAuthView) {
+    public void attach(OAuthView oAuthView) {
         mOAuthView = oAuthView;
     }
 

@@ -1,5 +1,6 @@
 package com.github.piasy.oauth3.github.model;
 
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import com.google.auto.value.AutoValue;
 import com.google.gson.Gson;
@@ -10,7 +11,7 @@ import com.google.gson.TypeAdapter;
  */
 
 @AutoValue
-public abstract class GitHubUser {
+public abstract class GitHubUser implements Parcelable {
     public static TypeAdapter<GitHubUser> typeAdapter(final Gson gson) {
         return new AutoValue_GitHubUser.GsonTypeAdapter(gson);
     }

@@ -1,28 +1,18 @@
-apply plugin: 'com.android.library'
+apply from: "https://raw.githubusercontent.com/Piasy/GradleScripts/master/simple_lib_android_bintray.gradle"
 apply plugin: 'com.ofg.uptodate'
 apply plugin: 'me.tatarka.retrolambda'
-apply from: "https://raw.githubusercontent.com/Piasy/BintrayUploadScript/master/bintray.gradle"
 
 android {
-    compileSdkVersion rootProject.androidCompileSdkVersion
-    buildToolsVersion rootProject.androidBuildToolsVersion
-
+    if (!"true".equals(System.getenv('IS_PIASY_LIB_RELEASE'))) {
+        defaultConfig {
+            manifestPlaceholders = [OAUTH_REDIRECT_URI_SCHEME: "http",
+                                    OAUTH_REDIRECT_URI_HOST  : "localhost",
+                                    OAUTH_REDIRECT_URI_PATH  : "/android_callback",]
+        }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    defaultConfig {
-        minSdkVersion rootProject.minSdkVersion
-        targetSdkVersion rootProject.targetSdkVersion
-        versionCode rootProject.releaseVersionCode
-        versionName rootProject.releaseVersionName
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
     }
 }
 
@@ -43,4 +33,9 @@ dependencies {
     annotationProcessor "com.ryanharter.auto.value:auto-value-gson:$rootProject.autoValueGsonVersion"
     provided "com.ryanharter.auto.value:auto-value-gson:$rootProject.autoValueGsonVersion"
     annotationProcessor "com.ryanharter.auto.value:auto-value-parcel:0.2.5"
+
+
+    debugCompile "com.android.support:appcompat-v7:$rootProject.androidSupportSdkVersion"
+    debugCompile "com.vanniktech:onactivityresult:0.6.0"
+    debugAnnotationProcessor "com.vanniktech:onactivityresult-compiler:0.6.0"
 }

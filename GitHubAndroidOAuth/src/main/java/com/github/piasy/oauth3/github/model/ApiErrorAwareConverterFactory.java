@@ -1,7 +1,6 @@
 package com.github.piasy.oauth3.github.model;
 
 import com.google.gson.JsonSyntaxException;
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import okhttp3.MediaType;
@@ -32,26 +31,23 @@ public class ApiErrorAwareConverterFactory extends Converter.Factory {
                 mDelegateFactory.responseBodyConverter(mApiErrorClazz, annotations, retrofit);
         final Converter<ResponseBody, ?> delegateConverter =
                 mDelegateFactory.responseBodyConverter(type, annotations, retrofit);
-        return new Converter<ResponseBody, Object>() {
-            @Override
-            public Object convert(ResponseBody value) throws IOException {
-                // read them all, then create a new ResponseBody for ApiError
-                // because the response body is wrapped, we can't clone the ResponseBody correctly
-                MediaType mediaType = value.contentType();
-                String stringBody = value.string();
-                try {
-                    Object apiError = apiErrorConverter.convert(
-                            ResponseBody.create(mediaType, stringBody));
-                    if (apiError instanceof ApiError && ((ApiError) apiError).valid()) {
-                        throw (ApiError) apiError;
-                    }
-                } catch (JsonSyntaxException | NullPointerException ignored) {
-                    // array not error object, or critical error field is missing.
+        return (Converter<ResponseBody, Object>) value -> {
+            // read them all, then create a new ResponseBody for ApiError
+            // because the response body is wrapped, we can't clone the ResponseBody correctly
+            MediaType mediaType = value.contentType();
+            String stringBody = value.string();
+            try {
+                Object apiError = apiErrorConverter.convert(
+                        ResponseBody.create(mediaType, stringBody));
+                if (apiError instanceof ApiError && ((ApiError) apiError).valid()) {
+                    throw (ApiError) apiError;
                 }
-
-                // then create a new ResponseBody for normal body
-                return delegateConverter.convert(ResponseBody.create(mediaType, stringBody));
+            } catch (JsonSyntaxException | NullPointerException ignored) {
+                // array not error object, or critical error field is missing.
             }
+
+            // then create a new ResponseBody for normal body
+            return delegateConverter.convert(ResponseBody.create(mediaType, stringBody));
         };
     }
 
