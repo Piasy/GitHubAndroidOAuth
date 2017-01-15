@@ -21,4 +21,9 @@ public abstract class GitHubError extends ApiErrorAwareConverterFactory.ApiError
     public boolean valid() {
         return !TextUtils.isEmpty(error());
     }
+
+    @Override
+    public String toString() {
+        return "GitHubError " + error();
+    }
 }

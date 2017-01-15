@@ -1,1 +1,28 @@
-<manifest package="com.github.piasy.github.androido.auth3"/>
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.github.piasy.oauth3.github">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application>
+        <activity
+                android:name=".view.OAuthActivity"
+                android:launchMode="singleTop"
+                android:taskAffinity="com.github.piasy.oauth3.github"
+                android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+                >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+
+                <data
+                        android:host="${OAUTH_REDIRECT_URI_HOST}"
+                        android:path="${OAUTH_REDIRECT_URI_PATH}"
+                        android:scheme="${OAUTH_REDIRECT_URI_SCHEME}"/>
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
