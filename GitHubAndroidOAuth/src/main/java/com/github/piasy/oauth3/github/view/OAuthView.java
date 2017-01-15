@@ -9,5 +9,7 @@ import com.github.piasy.oauth3.github.model.GitHubUser;
 public interface OAuthView {
     void authSuccess(String token, GitHubUser user);
 
-    void authFail(String error);
+    void authFail(int code, String error);
+
+    void codeArrived(OAuthResult result);
 }

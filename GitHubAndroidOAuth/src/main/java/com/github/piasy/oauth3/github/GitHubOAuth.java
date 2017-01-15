@@ -1,7 +1,7 @@
 package com.github.piasy.oauth3.github;
 
+import android.app.Activity;
 import android.os.Parcelable;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import com.github.piasy.oauth3.github.model.GitHubUser;
 import com.github.piasy.oauth3.github.view.OAuthActivity;
@@ -17,10 +17,18 @@ import java.util.Random;
 public abstract class GitHubOAuth implements Parcelable {
 
     public static final String TAG = "GitHubOAuth";
+
     public static final int OAUTH_REQ = 1229;
+
+    public static final String RESULT_KEY_ERROR_CODE = "GitHubOAuth_RESULT_KEY_ERROR_CODE";
     public static final String RESULT_KEY_USER = "GitHubOAuth_RESULT_KEY_USER";
     public static final String RESULT_KEY_TOKEN = "GitHubOAuth_RESULT_KEY_TOKEN";
     public static final String RESULT_KEY_ERROR = "GitHubOAuth_RESULT_KEY_ERROR";
+
+    public static final int ERROR_OAUTH_FAIL = 1;
+    public static final int ERROR_API_FAIL = 2;
+    public static final int ERROR_USER_CANCEL = 3;
+    public static final int ERROR_UNKNOWN_ERROR = 4;
 
     private static final String GITHUB_AUTH_WITHOUT_SCOPE_URL_FORMATTER
             = "https://github.com/login/oauth/authorize?client_id=%s&state=%s&redirect_uri=%s";
@@ -53,7 +61,7 @@ public abstract class GitHubOAuth implements Parcelable {
         OAuthActivity.startOAuth(fragment, this);
     }
 
-    public void authorize(AppCompatActivity activity) {
+    public void authorize(Activity activity) {
         OAuthActivity.startOAuth(activity, this);
     }
 

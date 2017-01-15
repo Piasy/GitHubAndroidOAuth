@@ -32,6 +32,7 @@ import android.widget.Toast;
 import com.github.piasy.oauth3.github.model.GitHubUser;
 import onactivityresult.ActivityResult;
 import onactivityresult.Extra;
+import onactivityresult.ExtraInt;
 import onactivityresult.ExtraString;
 import onactivityresult.OnActivityResult;
 
@@ -43,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Log.d(GitHubOAuth.TAG, "MainActivity: onCreate");
 
         mGitHubOAuth = GitHubOAuth.builder()
                 .clientId("YOUR_CLIENT_ID")
@@ -57,8 +60,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        Log.d(GitHubOAuth.TAG, "MainActivity: onDestroy");
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        Log.d(GitHubOAuth.TAG,
+                "MainActivity: onActivityResult " + requestCode + ", " + resultCode + ", " + data);
         ActivityResult.onResult(requestCode, resultCode, data).into(this);
     }
 
@@ -70,7 +83,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnActivityResult(requestCode = GitHubOAuth.OAUTH_REQ, resultCodes = RESULT_CANCELED)
-    public void onAuthFail(@ExtraString(name = GitHubOAuth.RESULT_KEY_ERROR) String error) {
-        Toast.makeText(this, "onFail " + error, Toast.LENGTH_SHORT).show();
+    public void onAuthFail(@ExtraInt(name = GitHubOAuth.RESULT_KEY_ERROR_CODE) int errorCode
+            , @ExtraString(name = GitHubOAuth.RESULT_KEY_ERROR) String error) {
+        Toast.makeText(this, "onFail " + errorCode + ", " + error, Toast.LENGTH_SHORT).show();
     }
 }
