@@ -8,7 +8,7 @@
         <activity
                 android:name=".view.OAuthActivity"
                 android:launchMode="singleTop"
-                android:taskAffinity="com.github.piasy.oauth3.github"
+                android:taskAffinity="${applicationId}"
                 android:theme="@style/Theme.AppCompat.Light.NoActionBar"
                 >
             <intent-filter>

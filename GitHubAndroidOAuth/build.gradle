@@ -21,6 +21,8 @@ android {
 }
 
 dependencies {
+    compile "com.android.support:appcompat-v7:$rootProject.androidSupportSdkVersion"
+
     compile "com.squareup.okhttp3:okhttp:$rootProject.okHttpVersion"
     compile "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
     compile "com.squareup.retrofit2:retrofit:$rootProject.retrofitVersion"
@@ -38,8 +40,6 @@ dependencies {
     compile "frankiesardo:icepick:$rootProject.icePickVersion"
     annotationProcessor "frankiesardo:icepick-processor:$rootProject.icePickVersion"
 
-
-    debugCompile "com.android.support:appcompat-v7:$rootProject.androidSupportSdkVersion"
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
     debugCompile "com.vanniktech:onactivityresult:0.6.0"
     debugAnnotationProcessor "com.vanniktech:onactivityresult-compiler:0.6.0"

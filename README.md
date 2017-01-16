@@ -20,7 +20,7 @@ allprojects {
     }
 }
 
-compile 'com.github.piasy:GitHubAndroidOAuth:1.1.0'
+compile 'com.github.piasy:GitHubAndroidOAuth:1.2.0'
 ```
 
 ### Java

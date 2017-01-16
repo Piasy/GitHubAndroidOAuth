@@ -76,13 +76,6 @@ public abstract class GitHubOAuth implements Parcelable {
         }
     }
 
-    public interface Listener {
-
-        void onSuccess(String token, GitHubUser user);
-
-        void onFail(String error);
-    }
-
     @AutoValue.Builder
     public abstract static class Builder {
 

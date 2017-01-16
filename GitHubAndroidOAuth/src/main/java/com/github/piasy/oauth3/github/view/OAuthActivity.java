@@ -117,6 +117,8 @@ public class OAuthActivity extends AppCompatActivity implements OAuthView {
     protected void onPause() {
         super.onPause();
 
+        Log.d(GitHubOAuth.TAG, "OAuthActivity: onPause mState = " + mState);
+
         if (mState == STATE_NOT_REQ) {
             mState = STATE_SEND_REQ;
         }
