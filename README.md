@@ -7,6 +7,10 @@ OAuth for GitHub in Android.
 
 ![2017011551325GitHubOAuth_state_machine_normal.jpg](https://imgs.babits.top/2017011551325GitHubOAuth_state_machine_normal.jpg)
 
+## Warning
+
+Because v1.2.0 use standard http/https scheme to jump from browser into your app, but some browser may not support it, so consider use v1.1.0, which is based on in-app web view interception. [See this wiki](https://github.com/Piasy/GitHubAndroidOAuth/wiki/Using-v1.1.0).
+
 ## Usage
 
 ### Dependency
