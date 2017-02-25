@@ -1,6 +1,5 @@
 package com.github.piasy.oauth3.github.view;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -11,9 +10,9 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.view.Window;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 import com.github.piasy.dialogfragmentanywhere.BaseDialogFragment;
 import com.github.piasy.github.androido.auth3.R;
 import com.github.piasy.oauth3.github.GitHubOAuth;
@@ -37,50 +36,8 @@ public class OAuthDialogFragment extends BaseDialogFragment implements OAuthView
     private GitHubOAuth.Listener mListener;
     private OAuthPresenter mOAuthPresenter;
 
-    private ProgressDialog mSpinner;
     private WebView mWebView;
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        if (getTargetFragment() instanceof GitHubOAuth.Listener) {
-            mListener = (GitHubOAuth.Listener) getTargetFragment();
-        } else {
-            mListener = (GitHubOAuth.Listener) getActivity();
-        }
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        mGitHubOAuth = getArguments().getParcelable(ARG_KEY_AUTH);
-        if (mGitHubOAuth == null) {
-            throw new NullPointerException("null auth info");
-        }
-        mOAuthPresenter = new OAuthPresenter(mGitHubOAuth);
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        mOAuthPresenter.attatch(this);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mOAuthPresenter.destroy();
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-
-        mListener = null;
-    }
+    private ProgressBar mProgress;
 
     public static void startOAuth(Fragment host, GitHubOAuth gitHubOAuth) {
         if (!(host instanceof GitHubOAuth.Listener)) {
@@ -105,6 +62,42 @@ public class OAuthDialogFragment extends BaseDialogFragment implements OAuthView
         args.putParcelable(ARG_KEY_AUTH, gitHubOAuth);
         fragment.setArguments(args);
         fragment.show(host.getSupportFragmentManager(), OAuthDialogFragment.class.getName());
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if (getTargetFragment() instanceof GitHubOAuth.Listener) {
+            mListener = (GitHubOAuth.Listener) getTargetFragment();
+        } else {
+            mListener = (GitHubOAuth.Listener) getActivity();
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+        mListener = null;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mGitHubOAuth = getArguments().getParcelable(ARG_KEY_AUTH);
+        if (mGitHubOAuth == null) {
+            throw new NullPointerException("null auth info");
+        }
+        mOAuthPresenter = new OAuthPresenter(mGitHubOAuth);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        mOAuthPresenter.attatch(this);
     }
 
     @Override
@@ -139,11 +132,8 @@ public class OAuthDialogFragment extends BaseDialogFragment implements OAuthView
             safeDismiss();
         }
 
-        mSpinner = new ProgressDialog(getContext());
-        mSpinner.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        mSpinner.setMessage(getString(R.string.oauth_loading_message));
-
         mWebView = findById(rootView, R.id.mWebView);
+        mProgress = findById(rootView, R.id.mProgress);
     }
 
     @Override
@@ -176,40 +166,34 @@ public class OAuthDialogFragment extends BaseDialogFragment implements OAuthView
                 super.onPageStarted(view, url, favicon);
 
                 Log.d(GitHubOAuth.TAG, "Loading URL: " + url);
-                mSpinner.show();
+                mProgress.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
 
-                if (!url.startsWith(mGitHubOAuth.redirectUrl())) {
-                    mSpinner.hide();
-                }
-            }
-
-            @Override
-            public void onReceivedError(WebView view, int errorCode,
-                    String description, String failingUrl) {
-                super.onReceivedError(view, errorCode, description, failingUrl);
-                Log.d(GitHubOAuth.TAG, "Page error: " + description);
-
-                safeDismiss();
+                mProgress.setVisibility(View.GONE);
             }
         });
         mWebView.loadUrl(mGitHubOAuth.authUrl());
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mProgress.setVisibility(View.GONE);
+        mOAuthPresenter.destroy();
+    }
+
+    @Override
     public void authSuccess(String token, GitHubUser user) {
-        mSpinner.hide();
         mListener.onSuccess(token, user);
         safeDismiss();
     }
 
     @Override
     public void authFail(String error) {
-        mSpinner.hide();
         mListener.onFail(error);
         safeDismiss();
     }
